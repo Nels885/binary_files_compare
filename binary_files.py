@@ -14,6 +14,7 @@ class BinaryFile:
     def __init__(self, *args, **kwargs) -> None:
         self.bfc = list(args)
         self.lgbuf = kwargs.get('lgbuf', 16)
+        self.maxSize = os.path.getsize(self.bfc[0])
         self.result = False
 
     def compare(self):
@@ -60,9 +61,9 @@ class BinaryFile:
                     f.write(max_value)
                     number += 1
                     if number % 65536 == 0:
-                        print(".", end="")
+                        self._progress_bar(filename, os.path.getsize(filename), bar_length=50, width=len(filename))
             [f.close() for f in files]
-            print("\n")
+            print()
         except:
             for file in files:
                 if file != None: file.close()
@@ -79,6 +80,12 @@ class BinaryFile:
             data += val
         return data
 
+    def _progress_bar(self, name, current_size, bar_length=20, width=20):
+        percent = float(current_size) / self.maxSize
+        arrow = '-' * int(round(percent*bar_length) - 1) + '>'
+        spaces = ' ' * (bar_length - len(arrow))
+        print("\r{0: <{1}} : [{2}]{3}% ".format(name, width, arrow + spaces, int(round(percent*100))), end="", flush=True)
+
     def get_size(self):
         for bfc in self.bfc:
             if os.path.getsize(self.bfc[0]) != os.path.getsize(bfc):
@@ -90,18 +97,40 @@ if __name__ == "__main__":
  
     import time
  
+    """
     bfiles = [
-        "test3.bin", "dump001.BIN", "dump002.BIN","dump003.BIN", "dump004_ok.BIN", 
+        "dump000.BIN", "dump001.BIN", "dump002.BIN","dump003.BIN", "dump004_ok.BIN", 
         "dump005_ok.BIN", "dump006.BIN", "dump007.BIN", "dump008.BIN", "dump009.BIN"
+    ]
+    
+    bfiles = [
+        "NANDTolerance1_000.bin", "NANDTolerance1_001.bin", "NANDTolerance1_002.bin","NANDTolerance1_004.bin"
+    ]
+    
+    bfiles = [
+        "NANDTolerance1WithCorrection_000.bin", "NANDTolerance1WithCorrection_001.bin", "NANDTolerance1WithCorrection_002.bin",
+        "NANDTolerance1WithCorrection_004.bin"
+    ]
+    
+    bfiles = [
+        "1 NAND 306 tolerance1 without correction.BIN", "2 NAND 306 tolerance1 without correction.BIN", 
+        "3 NAND 306 tolerance1 without correction.BIN"
+    ]
+    """
+    bfiles = [
+        "dump_generate.bin", "NANDTolerance1_generate.bin", "NANDTolerance1WithCorrection_generate.bin", 
+        "NAND 306 tolerance1 without correction_generate.bin"
     ]
 
     t = time.process_time()
     files = BinaryFile(*bfiles)
+    
     error_nb = files.compare()
     t = time.process_time()-t
     print("Résultat:", files.result, "%.3f s" % t)
     print(f"Nombre d'erreur: {error_nb}")
-
-    files.generate("test4.bin")
+    """
+    files.generate("NAND 306 tolerance1 without correction_generate.bin")
     t = time.process_time()-t
     print("Generating file terminated :)", "%.3f s" % t)
+    """
