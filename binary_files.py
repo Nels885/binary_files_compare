@@ -44,12 +44,12 @@ class BinaryFile:
         return error_nb
 
     def generate(self, filename):
-        number = error_nb = 0
+        number = 0
         f = open(filename, "wb")
         files = [None for f in self.bfc]
         try:
             if self.get_size():
-                print("SIZE OK")
+                print("SIZE OK, Generating file in progress...")
                 files = [open(f, "rb") for f in self.bfc]
                 while True:
                     buf = [file.read(2) for file in files]
@@ -58,12 +58,15 @@ class BinaryFile:
                         break
                     max_value = max(buf, key=buf.count)
                     f.write(max_value)
+                    number += 1
+                    if number % 65536 == 0:
+                        print(".", end="")
             [f.close() for f in files]
+            print("\n")
         except:
             for file in files:
                 if file != None: file.close()
             raise IOError
-        return error_nb
     
     def data_color(self, buffer, *args):
         data = ""
@@ -99,6 +102,6 @@ if __name__ == "__main__":
     print("Résultat:", files.result, "%.3f s" % t)
     print(f"Nombre d'erreur: {error_nb}")
 
-    # files.generate("test3.bin")
-    # t = time.process_time()-t
-    # print("Generate file terminated:", "%.3f s" % t)
+    files.generate("test4.bin")
+    t = time.process_time()-t
+    print("Generating file terminated :)", "%.3f s" % t)
