@@ -45,7 +45,8 @@ class BinaryFile:
         return error_nb
 
     def generate(self, filename):
-        number = 0
+        number = error_nb = 0
+        buf_ascii = data_ascii = ""
         f = open(filename, "wb")
         files = [None for f in self.bfc]
         try:
@@ -53,13 +54,25 @@ class BinaryFile:
                 print("SIZE OK, Generating file in progress...")
                 files = [open(f, "rb") for f in self.bfc]
                 while True:
-                    buf = [file.read(2) for file in files]
+                    buf = [file.read(1) for file in files]
                     if len(buf[0]) == 0:
                         self.result = True
                         break
                     max_value = max(buf, key=buf.count)
                     f.write(max_value)
+                    if buf.count(max_value) < (len(buf) / 2 + 2):
+                        buf_ascii += f"\rOFFSET: {self.OKGREEN}{hex(number):10}{self.ENDC} {buf.count(max_value)}*{binascii.hexlify(max_value).decode('utf8').upper()}"
+                        for val in buf:
+                            buf_ascii += f" - {binascii.hexlify(val).decode('utf8').upper()}"
+                        data_ascii += f"{self.FAIL}{binascii.hexlify(buf[0]).decode('utf8').upper()}{self.ENDC}"
+                        error_nb += 1
+                    else:
+                        data_ascii += f"{binascii.hexlify(buf[0]).decode('utf8').upper()}"
                     number += 1
+                    if number % 16 == 0:
+                        if buf_ascii:
+                            print(f"{buf_ascii}  ||  {data_ascii}")
+                        buf_ascii = data_ascii = ""
                     if number % 65536 == 0:
                         self._progress_bar(filename, os.path.getsize(filename), bar_length=50, width=len(filename))
             [f.close() for f in files]
@@ -68,6 +81,7 @@ class BinaryFile:
             for file in files:
                 if file != None: file.close()
             raise IOError
+        return error_nb
     
     def data_color(self, buffer, *args):
         data = ""
@@ -97,12 +111,12 @@ if __name__ == "__main__":
  
     import time
  
-    """
-    bfiles = [
-        "dump000.BIN", "dump001.BIN", "dump002.BIN","dump003.BIN", "dump004_ok.BIN", 
-        "dump005_ok.BIN", "dump006.BIN", "dump007.BIN", "dump008.BIN", "dump009.BIN"
-    ]
     
+    bfiles = [
+        "DUMPS/dump004_ok.BIN", "DUMPS/dump005_ok.BIN", "DUMPS/dump000.BIN", "DUMPS/dump001.BIN", "DUMPS/dump002.BIN",
+        "DUMPS/dump003.BIN", "DUMPS/dump006.BIN", "DUMPS/dump007.BIN", "DUMPS/dump008.BIN"
+    ]
+    """
     bfiles = [
         "NANDTolerance1_000.bin", "NANDTolerance1_001.bin", "NANDTolerance1_002.bin","NANDTolerance1_004.bin"
     ]
@@ -116,21 +130,21 @@ if __name__ == "__main__":
         "1 NAND 306 tolerance1 without correction.BIN", "2 NAND 306 tolerance1 without correction.BIN", 
         "3 NAND 306 tolerance1 without correction.BIN"
     ]
-    """
+    
     bfiles = [
         "dump_generate.bin", "NANDTolerance1_generate.bin", "NANDTolerance1WithCorrection_generate.bin", 
         "NAND 306 tolerance1 without correction_generate.bin"
     ]
-
+    """
     t = time.process_time()
     files = BinaryFile(*bfiles)
-    
+    """
     error_nb = files.compare()
     t = time.process_time()-t
     print("Résultat:", files.result, "%.3f s" % t)
     print(f"Nombre d'erreur: {error_nb}")
     """
-    files.generate("NAND 306 tolerance1 without correction_generate.bin")
+    error_nb = files.generate("test002_generate.bin")
     t = time.process_time()-t
     print("Generating file terminated :)", "%.3f s" % t)
-    """
+    print(f"Nombre d'erreur: {error_nb}")
