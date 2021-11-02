@@ -11,6 +11,7 @@ class BinaryFile:
     def __init__(self, *args, **kwargs) -> None:
         self.bfc = list(args)
         self.lgbuf = kwargs.get('lgbuf', 16)
+        self.manual = kwargs.get('manual', False)
         self.maxSize = os.path.getsize(self.bfc[0])
         self.result = False
         self.outFile = None 
@@ -105,16 +106,17 @@ class BinaryFile:
     def _display_generate(self, buf_ascii, data_ascii, bufs):
         if buf_ascii:
             print(f"{buf_ascii}  ||  {data_ascii}")
-            bufs_value = [value[0] for value in bufs]
-            for i, data in enumerate(bufs):
-                if data[2] == 1 and bufs_value.count(max(bufs_value, key=bufs_value.count)) > len(bufs_value) -2:
-                    default_val = binascii.hexlify(data[0]).decode("utf8").upper()
-                    try:
-                        select = int(input(f'Select default {default_val} or 0 at {len(data[1]) - 1} : '))
-                        print(binascii.hexlify(data[1][select]).decode("utf8").upper())
-                        bufs[i][0] = data[1][select]
-                    except ValueError:
-                        print(default_val)
+            if self.manual:
+                bufs_value = [value[0] for value in bufs]
+                for i, data in enumerate(bufs):
+                    if data[2] == 1 and bufs_value.count(max(bufs_value, key=bufs_value.count)) > len(bufs_value) -2:
+                        default_val = binascii.hexlify(data[0]).decode("utf8").upper()
+                        try:
+                            select = int(input(f'Select default {default_val} or 0 at {len(data[1]) - 1} : '))
+                            print(binascii.hexlify(data[1][select]).decode("utf8").upper())
+                            bufs[i][0] = data[1][select]
+                        except ValueError:
+                            print(default_val)
         self.outFile.write(b"".join([value[0] for value in bufs]))
 
     def get_size(self):

@@ -15,7 +15,7 @@ def main(args):
     ]
     
     t = time.process_time()
-    files = BinaryFile(*bfiles)
+    files = BinaryFile(*bfiles, manual=args.manual)
     
     if args.compare:
         error_nb = files.compare()
@@ -39,6 +39,7 @@ if __name__ == "__main__":
     parser.add_argument('-c', '--compare', action='store_true', dest='compare', help='Binary compare')
     parser.add_argument('-g', '--generator', action='store_true', dest='generator', help='Binary generator')
     parser.add_argument('-o', '--output_file', action='store', dest='output_file', type=str, default="binary_generate.bin" , help='Output file for generator')
+    parser.add_argument('-m', '--manual', action='store_true', dest='manual', help='Manual file generator')
     args = parser.parse_args()
 
     main(args)
